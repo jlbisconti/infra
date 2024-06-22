@@ -51,3 +51,13 @@ En este comando vamos a configurar la instalacion con las opciones especificas q
 - --prefix=/opt/squid-6.8: Especifica el directorio de instalación para Squid, en este caso, /opt/squid-6.8.
 - --enable-ssl-bump: Activa la capacidad de inspección y modificación del tráfico HTTPS (SSL Bump).
 - --enable-transparent: Permite a Squid operar en modo proxy transparente, interceptando el tráfico sin necesidad de configuración explícita del cliente.
+
+Luego de que el comando ./configure con los flags necesarios corremos los comandos:
+
+```
+ make && make install
+```
+
+> Nota: Podemos correr los comandos por separado como forma de asegurarnos que ambos terminen sin errores. 
+
+
