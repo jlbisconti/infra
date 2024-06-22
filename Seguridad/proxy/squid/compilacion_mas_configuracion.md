@@ -129,7 +129,7 @@ half_closed_clients off
 max_filedescriptors 4096
 ## Seguridad
 reply_body_max_size 1 MB
-
+```
 
 Este es el detalle de lso campos de mi archivo squid.conf:
 
