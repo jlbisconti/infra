@@ -172,10 +172,6 @@ Este es el detalle de lso campos de mi archivo squid.conf:
 
 # Creacion de servicio systemd parab Squid
 
-# Creación de Servicio de systemd para Squid
-
-# Creación de Servicio de systemd para Squid
-
 ## Paso 1: Crear el archivo de servicio
 
 Crear el archivo correspondiente en la ruta `/etc/systemd/system/squid.service` con el siguiente contenido:
@@ -202,16 +198,16 @@ WantedBy=multi-user.target
 ### After: Indica que el servicio debe iniciarse después de que el objetivo network-online.target esté activo.
 [Service]
 
-Type=forking: Indica que el servicio se inicia con un proceso padre que se bifurca (fork).
-ExecStart: Comando para iniciar Squid con las opciones -sYC.
-ExecReload: Comando para recargar la configuración de Squid.
-ExecStop: Comando para detener Squid.
-PIDFile: Ruta del archivo que contiene el ID del proceso de Squid.
-User y Group: Usuario y grupo bajo los cuales se ejecuta el servicio.
+- `Type=forking`: Indica que el servicio se inicia con un proceso padre que se bifurca (fork).
+- `ExecStart`: Comando para iniciar Squid con las opciones -sYC.
+- `ExecReload`: Comando para recargar la configuración de Squid.
+- `ExecStop`: Comando para detener Squid.
+- `PIDFile`: Ruta del archivo que contiene el ID del proceso de Squid.
+- `User y Group`: Usuario y grupo bajo los cuales se ejecuta el servicio.
 [Install]
 
-WantedBy: Define el objetivo multi-user.target para que el servicio se inicie en el modo multiusuario.
-Paso 2: Recargar los archivos de configuración de systemd
+- `WantedBy:` Define el objetivo multi-user.target para que el servicio se inicie en el modo multiusuario.
+
 Ejecutar el siguiente comando para recargar los archivos de configuración de systemd:
 
 ```
