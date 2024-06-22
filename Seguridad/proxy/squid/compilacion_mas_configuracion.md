@@ -112,14 +112,12 @@ http_access deny all
 error_directory /home/jlb/squid-6.8/errors/en/
 workers 8
 visible_hostname guemes
-#http_port 10.10.10.5:4554 intercept
 http_port 10.10.10.5:4555
 https_port 10.10.10.5:4556 intercept ssl-bump cert=/opt/squid-6.8/cassl/proxyca.pem generate-host-certificates=on dynamic_cert_mem_cache_size=16MB
 acl step1 at_step SslBump1
 ssl_bump peek step1
 ssl_bump bump all
 
-#cache_dir ufs /opt/squid-6.8/var/cache/squid 100 16 256
 cache_log /opt/squid-6.8/var/logs/cache.log
 access_log /opt/squid-6.8/var/logs/access.log
 sslcrtd_program /opt/squid-6.8/libexec/security_file_certgen -s /opt/squid-6.8/ssl -M 128MB
@@ -132,3 +130,62 @@ max_filedescriptors 4096
 ## Seguridad
 reply_body_max_size 1 MB
 ```
+
+Este es el detalle de lso campos de mi archivo squid.conf:
+
+# Configuración de Squid
+
+## Redes Permitidas
+
+- `acl host-infra src 10.10.10.0/24`: Define una lista de control de acceso (ACL) llamada `host-infra` que permite el tráfico desde la subred `10.10.10.0/24`, correspondiente a los equipos físicos en la LAN.
+- `acl net-vms src 10.10.100.0/25`: Define una ACL llamada `net-vms` que permite el tráfico desde la subred `10.10.100.0/25`, correspondiente al entorno virtualizado.
+
+## Puertos Permitidos
+
+- `acl SSL_ports port 443`: Define una ACL para el puerto 443, utilizado para HTTPS.
+- `acl Safe_ports port 80`: Define una ACL para el puerto 80, utilizado para HTTP.
+- `acl Safe_ports port 4556`: Define una ACL para el puerto 4556, utilizado para la interceptación HTTPS.
+- `acl Safe_ports port 4555`: Define una ACL para el puerto 4555, en el que escucha el proxy.
+- `acl directo method CONNECT`: Define una ACL para el método HTTP CONNECT, necesario para túneles SSL.
+
+## Permitir ACLs
+
+- `http_access allow host-infra`: Permite el acceso HTTP para la ACL `host-infra`.
+- `http_access allow net-vms`: Permite el acceso HTTP para la ACL `net-vms`.
+- `http_access allow localhost manager`: Permite el acceso al administrador desde localhost.
+- `http_access deny manager`: Niega el acceso al administrador desde cualquier otra fuente.
+- `http_access allow localhost`: Permite el acceso HTTP desde localhost.
+
+## Denegados
+
+- `http_access deny all`: Niega todo el acceso HTTP.
+- `http_access deny CONNECT !SSL_ports`: Niega el método CONNECT para puertos no SSL.
+- `http_access deny !Safe_ports`: Niega el acceso a puertos no seguros.
+
+## Configuración de Squid
+
+- `error_directory /home/jlb/squid-6.8/errors/en/`: Define el directorio de errores personalizados.
+- `workers 8`: Define el número de trabajadores para el procesamiento de solicitudes.
+- `visible_hostname guemes`: Define el nombre visible del proxy.
+- `http_port 10.10.10.5:4555`: Configura Squid para escuchar en el puerto 4555 para HTTP.
+- `https_port 10.10.10.5:4556 intercept ssl-bump cert=/opt/squid-6.8/cassl/proxyca.pem generate-host-certificates=on dynamic_cert_mem_cache_size=16MB`: Configura Squid para interceptar HTTPS en el puerto 4556, utilizando el certificado especificado y generando certificados dinámicamente.
+- `acl step1 at_step SslBump1`: Define una ACL para el primer paso de SSL Bumping.
+- `ssl_bump peek step1`: Inspecciona el tráfico SSL en el primer paso.
+- `ssl_bump bump all`: Intercepta y desencripta todo el tráfico SSL.
+
+## Logs
+
+- `cache_log /opt/squid-6.8/var/logs/cache.log`: Define el archivo de log de la caché.
+- `access_log /opt/squid-6.8/var/logs/access.log`: Define el archivo de log de acceso.
+- `sslcrtd_program /opt/squid-6.8/libexec/security_file_certgen -s /opt/squid-6.8/ssl -M 128MB`: Define el programa y los parámetros para la generación de certificados SSL.
+
+## Optimizaciones
+
+- `memory_cache_mode always`: Configura el modo de caché en memoria.
+- `maximum_object_size_in_memory 1 MB`: Define el tamaño máximo de objeto en memoria.
+- `half_closed_clients off`: Desactiva la gestión de clientes semi-cerrados.
+- `max_filedescriptors 4096`: Configura el número máximo de descriptores de archivo.
+
+## Seguridad
+
+- `reply_body_max_size 1 MB`: Define el tamaño máximo de respuesta permitido.
