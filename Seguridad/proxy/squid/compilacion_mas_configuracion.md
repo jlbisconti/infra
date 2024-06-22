@@ -46,8 +46,8 @@ Para realizar la compilacion de Squid 6.8 con los features que necesitamos vamos
 
 En este comando vamos a configurar la instalacion con las opciones especificas que necesitamos, este es el detalle:
 
---with-openssl: Incluir soporte para OpenSSL, necesario para manejar conexiones HTTPS.
---enable-ssl-crtd: Habilita el daemon SSL certificate generator (ssl_crtd) para la generación de certificados SSL dinámicos.
---prefix=/opt/squid-6.8: Especifica el directorio de instalación para Squid, en este caso, /opt/squid-6.8.
---enable-ssl-bump: Activa la capacidad de inspección y modificación del tráfico HTTPS (SSL Bump).
---enable-transparent: Permite a Squid operar en modo proxy transparente, interceptando el tráfico sin necesidad de configuración explícita del cliente.
+- --with-openssl: Incluir soporte para OpenSSL, necesario para manejar conexiones HTTPS.
+- --enable-ssl-crtd: Habilita el daemon SSL certificate generator (ssl_crtd) para la generación de certificados SSL dinámicos.
+- --prefix=/opt/squid-6.8: Especifica el directorio de instalación para Squid, en este caso, /opt/squid-6.8.
+- --enable-ssl-bump: Activa la capacidad de inspección y modificación del tráfico HTTPS (SSL Bump).
+- --enable-transparent: Permite a Squid operar en modo proxy transparente, interceptando el tráfico sin necesidad de configuración explícita del cliente.
