@@ -198,7 +198,7 @@ Group=nogroup
 WantedBy=multi-user.target
 ```
 
-## Description: Descripción del servicio.
+## Descripción del servicio.
 ### After: Indica que el servicio debe iniciarse después de que el objetivo network-online.target esté activo.
 [Service]
 
@@ -213,3 +213,51 @@ User y Group: Usuario y grupo bajo los cuales se ejecuta el servicio.
 WantedBy: Define el objetivo multi-user.target para que el servicio se inicie en el modo multiusuario.
 Paso 2: Recargar los archivos de configuración de systemd
 Ejecutar el siguiente comando para recargar los archivos de configuración de systemd:
+
+```
+systemctl daemon-reload
+
+```
+
+## Generacion de certificados y keys
+
+Antes de iniciar el nuevo servicio Squid necesitamos crear certificados y keys. Los comandos son los siguientes:
+
+```
+/opt/squid-6.8/libexec/security_file_certgen -c -s /opt/squid-6.8/ssl -M 128MB
+ mkdir cassl
+ openssl genrsa -out private.key 4096
+ openssl req -new -x509 -days 10000 -key private.key  -subj '/C=AR/ST=BSAS/L=isidro/CN=GSVE' -out ca.crt
+ mv ca.crt cassl/
+ mv private.key cassl/
+ cd cassl/
+ cp ca.crt proxyca.pem
+ cat private.key >>proxyca.pem
+```
+
+
+## Habilitar el servicio
+Ejecutar el siguiente comando para habilitar el servicio de Squid para que se inicie automáticamente al arrancar el sistema:
+
+```
+systemctl enable squid --now
+```
+## Comprobar la persistencia
+Para comprobar que el servicio se inicia correctamente después de un reinicio, reiniciar el sistema con:
+
+```
+reboot
+```
+
+# Comandos para gestionar Squid
+
+## Reconfigurar Squid después de realizar cambios en squid.conf
+
+Ejecutar el siguiente comando para recargar la configuración de Squid sin detener el servicio:
+
+```sh
+/opt/squid-6.8/sbin/squid -f /opt/squid-6.8/etc/squid.conf -k reconfigure
+
+```
+
+
