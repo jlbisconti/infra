@@ -61,3 +61,15 @@ Luego de que el comando ./configure con los flags necesarios corremos los comand
 > Nota: Podemos correr los comandos por separado como forma de asegurarnos que ambos terminen sin errores. 
 
 
+Al finalizar el proceso de compilacion vamos a poder verficar como quedaron los distintas carpetas:
+
+Aquí tienes una explicación de los directorios en /opt/squid-6.8:
+
+- bin: Contiene los ejecutables principales de Squid, como squid y otros comandos asociados.
+- cassl: Almacena los certificados SSL utilizados por Squid para la interceptación y generación de certificados dinámicos.
+- etc: Contiene los archivos de configuración de Squid, como squid.conf.
+- libexec: Almacena módulos adicionales y scripts ejecutables que extienden las funcionalidades de Squid.
+- sbin: Contiene ejecutables de administración de Squid.
+- share: Almacena archivos de datos compartidos, como documentación y archivos de soporte.
+- ssl: Contiene certificados SSL y claves privadas necesarias para la funcionalidad SSL.
+- var: Almacena datos variables como logs, cachés y otros archivos temporales generados durante la operación de Squid.
