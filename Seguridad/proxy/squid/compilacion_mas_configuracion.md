@@ -73,3 +73,62 @@ Aquí tienes una explicación de los directorios en /opt/squid-6.8:
 - share: Almacena archivos de datos compartidos, como documentación y archivos de soporte.
 - ssl: Contiene certificados SSL y claves privadas necesarias para la funcionalidad SSL.
 - var: Almacena datos variables como logs, cachés y otros archivos temporales generados durante la operación de Squid.
+
+#### Armado de archivo squid.conf
+
+Voy a comenza el armado del archivo squid.conf. Para ello me voy a posicionar en el path /opt/squid-6.8/etc. En esta oportunidad voy a crear un archivo squid.conf cusotmizado:
+
+```yaml
+#Redes Permtidas
+acl host-infra src 10.10.10.0/24 # ACL para LAN equipos fisicos
+acl net-vms src 10.10.100.0/25 # ACL salida entorno virtualizado 
+
+#Puertos permitidos
+acl SSL_ports port 443          # https
+acl Safe_ports port 80  # http
+#acl Safe_ports port 21         # ftp
+#acl Safe_ports port 22         # ssh
+acl Safe_ports port 4556         # https para inteercept
+acl Safe_ports port 4555                # Puerto en el que escucha el proxy
+acl directo method CONNECT
+
+#Permtir  ACLS
+
+http_access allow host-infra
+http_access allow net-vms
+http_access allow localhost manager
+http_access deny manager
+http_access allow localhost
+
+# Denegados
+
+http_access deny all 
+http_access deny CONNECT !SSL_ports
+http_access deny !Safe_ports
+# Deniega todo
+http_access deny all 
+
+# Config de squid 
+error_directory /home/jlb/squid-6.8/errors/en/
+workers 8
+visible_hostname guemes
+#http_port 10.10.10.5:4554 intercept
+http_port 10.10.10.5:4555
+https_port 10.10.10.5:4556 intercept ssl-bump cert=/opt/squid-6.8/cassl/proxyca.pem generate-host-certificates=on dynamic_cert_mem_cache_size=16MB
+acl step1 at_step SslBump1
+ssl_bump peek step1
+ssl_bump bump all
+
+#cache_dir ufs /opt/squid-6.8/var/cache/squid 100 16 256
+cache_log /opt/squid-6.8/var/logs/cache.log
+access_log /opt/squid-6.8/var/logs/access.log
+sslcrtd_program /opt/squid-6.8/libexec/security_file_certgen -s /opt/squid-6.8/ssl -M 128MB
+
+### Optimizaciones
+memory_cache_mode always
+maximum_object_size_in_memory 1 MB
+half_closed_clients off
+max_filedescriptors 4096
+## Seguridad
+reply_body_max_size 1 MB
+```
