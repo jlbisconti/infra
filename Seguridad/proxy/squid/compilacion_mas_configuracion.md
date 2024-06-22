@@ -78,7 +78,7 @@ Aquí tienes una explicación de los directorios en /opt/squid-6.8:
 
 Voy a comenza el armado del archivo squid.conf. Para ello me voy a posicionar en el path /opt/squid-6.8/etc. En esta oportunidad voy a crear un archivo squid.conf cusotmizado:
 
-```yaml
+```ini
 #Redes Permtidas
 acl host-infra src 10.10.10.0/24 # ACL para LAN equipos fisicos
 acl net-vms src 10.10.100.0/25 # ACL salida entorno virtualizado 
@@ -129,7 +129,7 @@ half_closed_clients off
 max_filedescriptors 4096
 ## Seguridad
 reply_body_max_size 1 MB
-```
+
 
 Este es el detalle de lso campos de mi archivo squid.conf:
 
