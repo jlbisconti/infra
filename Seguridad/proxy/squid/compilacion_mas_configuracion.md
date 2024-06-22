@@ -78,7 +78,7 @@ Aquí tienes una explicación de los directorios en /opt/squid-6.8:
 
 Voy a comenza el armado del archivo squid.conf. Para ello me voy a posicionar en el path /opt/squid-6.8/etc. En esta oportunidad voy a crear un archivo squid.conf cusotmizado:
 
-```ini
+```yaml
 #Redes Permtidas
 acl host-infra src 10.10.10.0/24 # ACL para LAN equipos fisicos
 acl net-vms src 10.10.100.0/25 # ACL salida entorno virtualizado 
@@ -170,6 +170,12 @@ Este es el detalle de lso campos de mi archivo squid.conf:
 - `max_filedescriptors 4096`: Configura el número máximo de descriptores de archivo.
 - `reply_body_max_size 1 MB`: Define el tamaño máximo de respuesta permitido.
 
+# Creacion de servicio systemd parab Squid
+
+# Creación de Servicio de systemd para Squid
+
+# Creación de Servicio de systemd para Squid
+
 ## Paso 1: Crear el archivo de servicio
 
 Crear el archivo correspondiente en la ruta `/etc/systemd/system/squid.service` con el siguiente contenido:
@@ -190,3 +196,20 @@ Group=nogroup
 
 [Install]
 WantedBy=multi-user.target
+```
+
+## Description: Descripción del servicio.
+### After: Indica que el servicio debe iniciarse después de que el objetivo network-online.target esté activo.
+[Service]
+
+Type=forking: Indica que el servicio se inicia con un proceso padre que se bifurca (fork).
+ExecStart: Comando para iniciar Squid con las opciones -sYC.
+ExecReload: Comando para recargar la configuración de Squid.
+ExecStop: Comando para detener Squid.
+PIDFile: Ruta del archivo que contiene el ID del proceso de Squid.
+User y Group: Usuario y grupo bajo los cuales se ejecuta el servicio.
+[Install]
+
+WantedBy: Define el objetivo multi-user.target para que el servicio se inicie en el modo multiusuario.
+Paso 2: Recargar los archivos de configuración de systemd
+Ejecutar el siguiente comando para recargar los archivos de configuración de systemd:
