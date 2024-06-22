@@ -170,3 +170,29 @@ Este es el detalle de lso campos de mi archivo squid.conf:
 - `max_filedescriptors 4096`: Configura el número máximo de descriptores de archivo.
 - `reply_body_max_size 1 MB`: Define el tamaño máximo de respuesta permitido.
 
+# Creacion de servicio systemd parab Squid
+
+# Creación de Servicio de systemd para Squid
+
+# Creación de Servicio de systemd para Squid
+
+## Paso 1: Crear el archivo de servicio
+
+Crear el archivo correspondiente en la ruta `/etc/systemd/system/squid.service` con el siguiente contenido:
+
+```ini
+[Unit]
+Description=Squid Web Proxy Server
+After=network-online.target
+
+[Service]
+Type=forking
+ExecStart=/opt/squid-6.8/sbin/squid -sYC
+ExecReload=/opt/squid-6.8/sbin/squid -k reconfigure
+ExecStop=/opt/squid-6.8/sbin/squid -k shutdown
+PIDFile=/opt/squid-6.8/var/run/squid.pid
+User=nobody
+Group=nogroup
+
+[Install]
+WantedBy=multi-user.target
