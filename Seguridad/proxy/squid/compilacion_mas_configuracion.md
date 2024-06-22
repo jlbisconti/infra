@@ -16,7 +16,7 @@ En cuanto al Software utilizado el detalle es el siguiente:
 - iptables v1.8.9
 - Squid 6.8
 
-### Descarga y compilacion de Squid 6.8
+## Descarga y compilacion de Squid 6.8
 
 Comenzamos por descargar Squid 6.8 con el siguiente comando:
 
@@ -36,7 +36,7 @@ Ahora ingresamos en la carpeta generada por la  descompresion:
 cd squid-6.8
 ```
 
-### Compilacion de Squid 6.8
+## Compilacion de Squid 6.8
 
 Para realizar la compilacion de Squid 6.8 con los features que necesitamos vamos correr primero el comando ./configure con los flags nevesarios:
 
@@ -74,7 +74,7 @@ Aquí tienes una explicación de los directorios en /opt/squid-6.8:
 - ssl: Contiene certificados SSL y claves privadas necesarias para la funcionalidad SSL.
 - var: Almacena datos variables como logs, cachés y otros archivos temporales generados durante la operación de Squid.
 
-#### Armado de archivo squid.conf
+## Armado de archivo squid.conf
 
 Voy a comenza el armado del archivo squid.conf. Para ello me voy a posicionar en el path /opt/squid-6.8/etc. En esta oportunidad voy a crear un archivo squid.conf cusotmizado:
 
@@ -169,3 +169,4 @@ Este es el detalle de lso campos de mi archivo squid.conf:
 - `half_closed_clients off`: Desactiva la gestión de clientes semi-cerrados.
 - `max_filedescriptors 4096`: Configura el número máximo de descriptores de archivo.
 - `reply_body_max_size 1 MB`: Define el tamaño máximo de respuesta permitido.
+
