@@ -79,45 +79,54 @@ Aquí tienes una explicación de los directorios en /opt/squid-6.8:
 Voy a comenza el armado del archivo squid.conf. Para ello me voy a posicionar en el path /opt/squid-6.8/etc. En esta oportunidad voy a crear un archivo squid.conf cusotmizado:
 
 ```yaml
-#Redes Permtidas
-acl host-infra src 10.10.10.0/24 # ACL para LAN equipos fisicos
-acl net-vms src 10.10.100.0/25 # ACL salida entorno virtualizado 
+# Redes Permitidas
+acl host-infra src 10.10.10.0/24  # ACL para LAN equipos físicos
+acl net-vms src 10.10.100.0/25    # ACL salida entorno virtualizado
+acl step1 at_step SslBump1
+acl step2 at_step SslBump2
+acl step3 at_step SslBump3
 
-#Puertos permitidos
-acl SSL_ports port 443          # https
-acl Safe_ports port 80  # http
-#acl Safe_ports port 21         # ftp
-#acl Safe_ports port 22         # ssh
-acl Safe_ports port 4556         # https para inteercept
-acl Safe_ports port 4555                # Puerto en el que escucha el proxy
-acl directo method CONNECT
+# Puertos permitidos
+acl SSL_ports port 443            # https
+acl SSL_ports port 4556           # https a través de proxy
+acl Safe_ports port 80            # http
+acl Safe_ports port 4556          # https para intercept
+acl Safe_ports port 4555          # Puerto en el que escucha el proxy
+acl Safe_ports port 443           # https
+acl Safe_ports port 1025-65535    # Puertos dinámicos
+acl CONNECT method CONNECT
 
-#Permtir  ACLS
-
+### ACLS filtros web
+# Permitir ACLs
 http_access allow host-infra
 http_access allow net-vms
 http_access allow localhost manager
 http_access deny manager
 http_access allow localhost
 
-# Denegados
+# Reglas SSL Bump
+http_access allow step1
+http_access allow step2
+http_access allow step3
 
-http_access deny all 
-http_access deny CONNECT !SSL_ports
-http_access deny !Safe_ports
-# Deniega todo
-http_access deny all 
+# Denegación de acceso por defecto
+http_access deny all
 
-# Config de squid 
+# Configuración de Squid
 error_directory /home/jlb/squid-6.8/errors/en/
 workers 8
 visible_hostname guemes
-http_port 10.10.10.5:4555
-https_port 10.10.10.5:4556 intercept ssl-bump cert=/opt/squid-6.8/cassl/proxyca.pem generate-host-certificates=on dynamic_cert_mem_cache_size=16MB
-acl step1 at_step SslBump1
-ssl_bump peek step1
-ssl_bump bump all
 
+# Puertos HTTP y HTTPS
+http_port 10.10.10.5:4555
+https_port 10.10.10.5:4556 intercept ssl-bump cert=/opt/squid-6.8/cassl/proxyca.pem key=/opt/squid-6.8/cassl/private.key generate-host-certificates=on dynamic_cert_mem_cache_size=16MB
+
+# Reglas SSL Bump
+ssl_bump peek step1
+ssl_bump bump step2
+ssl_bump splice step3
+
+# Cache y Logs
 cache_log /opt/squid-6.8/var/logs/cache.log
 access_log /opt/squid-6.8/var/logs/access.log
 sslcrtd_program /opt/squid-6.8/libexec/security_file_certgen -s /opt/squid-6.8/ssl -M 128MB
@@ -126,9 +135,17 @@ sslcrtd_program /opt/squid-6.8/libexec/security_file_certgen -s /opt/squid-6.8/s
 memory_cache_mode always
 maximum_object_size_in_memory 1 MB
 half_closed_clients off
-max_filedescriptors 4096
+max_filedescriptors 100000
+maximum_object_size 4096 MB
 ## Seguridad
-reply_body_max_size 1 MB
+reply_body_max_size 4096 MB
+
+
+refresh_pattern ^ftp:           1440    20%     10080
+refresh_pattern ^gopher:        1440    0%      1440
+refresh_pattern (cgi-bin|\?)    0       0%      0
+refresh_pattern .               0       20%     4320
+
 ```
 
 Este es el detalle de lso campos de mi archivo squid.conf:
