@@ -185,7 +185,7 @@ Este es el detalle de lso campos de mi archivo squid.conf:
 - `maximum_object_size_in_memory 1 MB`: Define el tamaño máximo de objeto en memoria.
 - `half_closed_clients off`: Desactiva la gestión de clientes semi-cerrados.
 - `max_filedescriptors 4096`: Configura el número máximo de descriptores de archivo.
-- `reply_body_max_size 1 MB`: Define el tamaño máximo de respuesta permitido.
+- `reply_body_max_size 4096 MB`: Define el tamaño máximo de respuesta permitido.
 
 # Creacion de servicio systemd parab Squid
 
