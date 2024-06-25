@@ -1,0 +1,16 @@
+[Unit]
+Description=Squid Web Proxy Server
+After=network-online.target
+
+[Service]
+Type=forking
+ExecStart=/opt/squid-6.8/sbin/squid -sYC
+ExecReload=/opt/squid-6.8/sbin/squid -k reconfigure
+ExecStop=/opt/squid-6.8/sbin/squid -k shutdown
+PIDFile=/opt/squid-6.8/var/run/squid.pid
+User=nobody
+Group=nogroup
+
+[Install]
+WantedBy=multi-user.target
+
