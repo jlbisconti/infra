@@ -1,0 +1,29 @@
+/opt/squid-6.8/var/logs/access.log /opt/squid-6.8/var/logs/cache.log {
+    daily
+    rotate 7
+    missingok
+    compress
+    delaycompress
+    notifempty
+    create 0644 root root
+    postrotate
+        if [ -x /opt/squid-6.8/sbin/squid ]; then
+            /opt/squid-6.8/sbin/squid -k reconfigure
+        fi
+    endscript
+}
+
+/var/log/suricata/*.log {
+    daily
+    rotate 7
+    missingok
+    compress
+    delaycompress
+    notifempty
+    create 0644 root root
+    postrotate
+        if [ -x /usr/bin/suricata ]; then
+            kill -HUP $(pgrep -f /usr/bin/suricata)
+        fi
+    endscript
+}

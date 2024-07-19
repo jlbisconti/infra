@@ -1,0 +1,17 @@
+/opt/squid-6.8/var/logs/access.log /opt/squid-6.8/var/logs/cache.log {
+    weekly
+    rotate 4
+    compress
+    delaycompress
+    missingok
+    notifempty
+    sharedscripts
+    su nobody nogroup
+    postrotate
+        /opt/squid-6.8/sbin/squid -k rotate
+        if pgrep squid > /dev/null; then
+            /opt/squid-6.8/sbin/squid -k reconfigure
+        fi
+    endscript
+}
+
