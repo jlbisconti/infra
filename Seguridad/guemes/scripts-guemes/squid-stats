@@ -1,0 +1,46 @@
+#!/bin/bash
+
+# Function to check Squid status and print system metrics
+check_squid() {
+    # Check if Squid is running
+    SQUID_RUNNING=$(ps -fax | grep "[s]quid" | grep -v "squid-stats")
+    
+    if [ -n "$SQUID_RUNNING" ]; then
+        echo "Squid is running."
+        SQUID_PID=$(echo "$SQUID_RUNNING" | head -n 1 | awk '{print $1}')
+
+        # Get CPU and RAM usage
+        CPU_USAGE=$(ps -p $SQUID_PID -o %cpu=)
+        RAM_USAGE=$(ps -p $SQUID_PID -o %mem=)
+
+        # Get uptime of Squid
+        UPTIME=$(ps -p $SQUID_PID -o etime=)
+
+        # Get number of open files
+        OPEN_FILES=$(lsof -p $SQUID_PID | wc -l)
+
+        # Get number of threads
+        THREAD_COUNT=$(ps -p $SQUID_PID -o nlwp=)
+
+        # Get disk usage
+        DISK_USAGE=$(du -sh /opt/squid-6.8/var/logs | awk '{print $1}')
+
+        echo "Squid PID: $SQUID_PID"
+        echo "CPU Usage: $CPU_USAGE%"
+        echo "RAM Usage: $RAM_USAGE%"
+        echo "Uptime: $UPTIME"
+        echo "Open Files: $OPEN_FILES"
+        echo "Thread Count: $THREAD_COUNT"
+        echo "Disk Usage (logs): $DISK_USAGE"
+    else
+        echo "Squid is not running."
+    fi
+}
+
+# Run the check in a loop
+while true; do
+    clear  # Clear the screen for a clean output
+    check_squid
+    sleep 2  # Wait for 2 seconds before repeating
+done
+

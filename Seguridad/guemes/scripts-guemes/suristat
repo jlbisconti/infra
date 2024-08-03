@@ -1,0 +1,46 @@
+#!/bin/bash
+
+# Function to check Suricata status and print system metrics
+check_suricata() {
+    # Check if Suricata is running
+    SURICATA_RUNNING=$(ps -fax | grep "[s]uricata -c" | grep -v grep)
+    
+    if [ -n "$SURICATA_RUNNING" ]; then
+        echo "Suricata is running."
+        SURICATA_PID=$(echo "$SURICATA_RUNNING" | awk '{print $1}')
+
+        # Get CPU and RAM usage
+        CPU_USAGE=$(ps -p $SURICATA_PID -o %cpu=)
+        RAM_USAGE=$(ps -p $SURICATA_PID -o %mem=)
+
+        # Get uptime of Suricata
+        UPTIME=$(ps -p $SURICATA_PID -o etime=)
+
+        # Get number of open files
+        OPEN_FILES=$(lsof -p $SURICATA_PID | wc -l)
+
+        # Get number of threads
+        THREAD_COUNT=$(ps -p $SURICATA_PID -o nlwp=)
+
+        # Get disk usage
+        DISK_USAGE=$(du -sh /var/log/suricata | awk '{print $1}')
+
+        echo "Suricata PID: $SURICATA_PID"
+        echo "CPU Usage: $CPU_USAGE%"
+        echo "RAM Usage: $RAM_USAGE%"
+        echo "Uptime: $UPTIME"
+        echo "Open Files: $OPEN_FILES"
+        echo "Thread Count: $THREAD_COUNT"
+        echo "Disk Usage (logs): $DISK_USAGE"
+    else
+        echo "Suricata is not running."
+    fi
+}
+
+# Run the check in a loop
+while true; do
+    clear  # Clear the screen for a clean output
+    check_suricata
+    sleep 2  # Wait for 2 seconds before repeating
+done
+
