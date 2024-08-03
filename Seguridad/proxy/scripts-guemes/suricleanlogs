@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# Directorio de logs de Suricata
+LOG_DIR="/var/log/suricata"
+
+# Fecha actual
+CURRENT_DATE=$(date +"%Y-%m-%d")
+
+# Buscar y eliminar archivos que no sean del día actual
+find "$LOG_DIR" -type f \( -name "*.log*" -o -name "*.json*" -o -name "*.gz" \) ! -newermt "$CURRENT_DATE" -exec rm -f {} \;
+
+# Mensaje de confirmación
+echo "Archivos con extensiones .log, .json y .gz que no sean del día actual han sido eliminados de $LOG_DIR."
+

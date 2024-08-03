@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# Directorio de logs de Squid
+LOG_DIR="/opt/squid-6.8/var/logs"
+
+# Fecha actual
+CURRENT_DATE=$(date +"%Y-%m-%d")
+
+# Buscar y eliminar archivos que no sean del día actual y que pertenezcan a nobody:nogroup
+find "$LOG_DIR" -type f ! -newermt "$CURRENT_DATE" -user nobody -group nogroup -exec rm -f {} \;
+
+# Mensaje de confirmación
+echo "Archivos en $LOG_DIR con usuario nobody:nogroup que no sean del día de hoy han sido eliminados."
