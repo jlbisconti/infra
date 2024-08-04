@@ -1,0 +1,57 @@
+#!/bin/bash
+### BEGIN INIT INFO
+# Provides:          jsms-backend
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Script para ejecutar al inicio
+# Description:       Este script se ejecuta al inicio del sistema
+### END INIT INFO
+
+# Ruta al directorio del proyecto
+PROJECT_DIR="/home/jlb/jsms/suricata-backend"
+
+# Nombre del entorno virtual
+VENV_DIR="$PROJECT_DIR/venv"
+
+# Ruta al archivo de log
+LOG_FILE="/var/log/gunicorn/gunicorn.log"
+
+# Comando para Gunicorn
+GUNICORN_CMD="gunicorn -w 4 -b 0.0.0.0:5000 app:app --log-file $LOG_FILE"
+
+# Funciones para manejar el servicio
+case "$1" in
+    start)
+        echo "Iniciando jsms-backend..."
+        cd $PROJECT_DIR || exit
+        source $VENV_DIR/bin/activate
+        $GUNICORN_CMD &
+        echo "jsms-backend iniciado."
+        ;;
+    stop)
+        echo "Deteniendo jsms-backend..."
+        pkill -f gunicorn
+        echo "jsms-backend detenido."
+        ;;
+    restart)
+        echo "Reiniciando jsms-backend..."
+        $0 stop
+        $0 start
+        ;;
+    status)
+        if pgrep -f gunicorn > /dev/null
+        then
+            echo "jsms-backend está corriendo."
+        else
+            echo "jsms-backend está detenido."
+        fi
+        ;;
+    *)
+        echo "Uso: $0 {start|stop|restart|status}"
+        exit 1
+        ;;
+esac
+
+exit 0
