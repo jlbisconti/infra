@@ -9,6 +9,14 @@ CURRENT_DATE=$(date +"%Y-%m-%d")
 # Buscar y eliminar archivos que no sean del día actual
 find "$LOG_DIR" -type f \( -name "*.log*" -o -name "*.json*" -o -name "*.gz" \) ! -newermt "$CURRENT_DATE" -exec rm -f {} \;
 
+# Crear nuevos archivos eve.json y fast.log
+touch "$LOG_DIR/eve.json"
+touch "$LOG_DIR/fast.log"
+
+# Establecer permisos adecuados (opcional, ajusta según tus necesidades)
+chmod 644 "$LOG_DIR/eve.json"
+chmod 644 "$LOG_DIR/fast.log"
+
 # Mensaje de confirmación
 echo "Archivos con extensiones .log, .json y .gz que no sean del día actual han sido eliminados de $LOG_DIR."
-
+echo "Nuevos archivos eve.json y fast.log han sido creados."
