@@ -2,7 +2,7 @@
 
 # Variables de configuración
 PG_USER="suricata"
-PG_DB="suricata_alerts"
+PG_DB="suricata"
 PG_HOST="localhost"  # Cambia si tu servidor PostgreSQL está en otro host
 PG_PORT="5432"        # Cambia si tu servidor PostgreSQL usa otro puerto
 PG_PASSWORD="murdok44"
