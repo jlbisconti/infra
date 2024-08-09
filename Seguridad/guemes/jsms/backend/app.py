@@ -5,7 +5,7 @@ app = Flask(__name__)
 
 # Configuración de la base de datos
 DB_HOST = '10.10.10.6'
-DB_NAME = 'suricata_alerts'
+DB_NAME = 'suricata'
 DB_USER = 'suricata'
 DB_PASSWORD = 'murdok44'
 
