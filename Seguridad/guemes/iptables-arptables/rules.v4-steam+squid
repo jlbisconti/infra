@@ -1,0 +1,81 @@
+*filter
+:INPUT DROP [0:0]
+:FORWARD ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+
+# INPUT
+
+# Permitir tráfico relacionado
+-A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+
+# Permitir servicios locales (Squid)
+-A INPUT -p tcp --dport 4555 -j ACCEPT
+-A INPUT -p tcp --dport 4556 -j ACCEPT
+
+# Permitir DNS UDP entrante
+-A INPUT -p udp --dport 53 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+
+# ICMP limitado
+-A INPUT -p icmp -m limit --limit 1/second --limit-burst 10 -j ACCEPT
+
+# Logging tráfico nuevo
+-A INPUT -p tcp --syn -m limit --limit 1/s --limit-burst 3 -j ACCEPT
+
+# Logging opcional
+-A INPUT -p tcp --dport 80 -j LOG --log-prefix "HTTP Traffic: "
+-A INPUT -p tcp --dport 443 -j LOG --log-prefix "HTTPS Traffic: "
+-A INPUT -j LOG --log-prefix "IPTables-INPUT: "
+
+# FORWARD
+
+# Suricata (IPS - inspección)
+-A FORWARD -i lan -o wan -j NFQUEUE --queue-num 0
+-A FORWARD -i wan -o lan -j NFQUEUE --queue-num 0
+
+# Permitir acceso a Squid desde LAN
+-A FORWARD -p tcp --dport 4555 -j ACCEPT
+-A FORWARD -p tcp --dport 4556 -j ACCEPT
+
+# Permitir consultas DNS desde LAN hacia afuera
+-A FORWARD -p udp --dport 53 -j ACCEPT
+-A FORWARD -p udp --sport 53 -j ACCEPT
+
+# También en OUTPUT/INPUT por si DNS es local
+-A OUTPUT -p udp --dport 53 -j ACCEPT
+-A INPUT  -p udp --sport 53 -j ACCEPT
+
+COMMIT
+
+*nat
+:PREROUTING ACCEPT [0:0]
+:INPUT ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+:POSTROUTING ACCEPT [0:0]
+
+
+
+# Excluir Steam (IP de tu PC) del proxy transparente
+-A PREROUTING -s 10.10.10.13 -p tcp --dport 80 -j ACCEPT
+-A PREROUTING -s 10.10.10.13 -p tcp --dport 443 -j ACCEPT
+
+# Redirección de HTTP y HTTPS al proxy Squid
+-A PREROUTING -i lan -p tcp --dport 80 -j REDIRECT --to-ports 4555
+-A PREROUTING -i lan -p tcp --dport 443 -j REDIRECT --to-ports 4556
+
+# NAT de salida
+-A POSTROUTING -o wan -j MASQUERADE
+
+COMMIT
+
+*mangle
+:PREROUTING ACCEPT [0:0]
+:INPUT ACCEPT [0:0]
+:FORWARD ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+:POSTROUTING ACCEPT [0:0]
+
+# NFQUEUE (redundante por si querés ver en tabla mangle también)
+-A FORWARD -i lan -o wan -j NFQUEUE --queue-num 0
+-A FORWARD -i wan -o lan -j NFQUEUE --queue-num 0
+
+COMMIT
