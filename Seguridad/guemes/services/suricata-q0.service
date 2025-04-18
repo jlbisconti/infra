@@ -1,0 +1,13 @@
+[Unit]
+Description=Suricata en modo NFQUEUE (cola 0)
+After=network.target
+
+[Service]
+Type=forking
+ExecStart=/etc/init.d/suricata-q0.sh start
+ExecStop=/etc/init.d/suricata-q0.sh stop
+ExecReload=/etc/init.d/suricata-q0.sh reload
+User=root
+
+[Install]
+WantedBy=multi-user.target
