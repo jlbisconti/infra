@@ -1,9 +1,10 @@
 [Unit]
 Description=Squid Web Proxy Server
-After=network-online.target
+After=network.target
 
 [Service]
 Type=forking
+ExecStartPre=/bin/sleep 1
 ExecStart=/opt/squid-6.8/sbin/squid -sYC
 ExecReload=/opt/squid-6.8/sbin/squid -k reconfigure
 ExecStop=/opt/squid-6.8/sbin/squid -k shutdown
