@@ -12,7 +12,7 @@ Editamos el archivo de configuración de `systemd-logind`:
 
 ```bash
 sudo nano /etc/systemd/logind.conf
-
+```
 Asegurate de que contenga las siguientes líneas sin comentar (#):
 
 [Login]
@@ -29,10 +29,10 @@ Guardá y cerrá (Ctrl+O, Enter, luego Ctrl+X).
 
 ```bash
 sudo systemctl restart systemd-logind
-
+```
  Paso 3: Enmascarar los targets de suspensión e hibernación
 Esto bloquea totalmente cualquier intento de suspender el sistema, incluso con comandos como systemctl suspend:
 
 ```bash
 sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target
-
+```
