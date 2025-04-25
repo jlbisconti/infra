@@ -1,13 +1,12 @@
 [Unit]
-Description=Suricata en modo NFQUEUE (cola 0)
+Description=Suricata IPS (NFQUEUE 0)
 After=network.target
 
 [Service]
-Type=forking
-ExecStart=/etc/init.d/suricata-q0.sh start
-ExecStop=/etc/init.d/suricata-q0.sh stop
-ExecReload=/etc/init.d/suricata-q0.sh reload
-User=root
+ExecStart=/opt/suricata-7/bin/suricata -c /opt/suricata-7/etc/suricata/suricata.yaml -q 0 --pidfile /var/run/suricata.pid
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=on-failure
+PIDFile=/var/run/suricata.pid
 
 [Install]
 WantedBy=multi-user.target
