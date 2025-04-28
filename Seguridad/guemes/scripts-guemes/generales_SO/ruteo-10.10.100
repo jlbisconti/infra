@@ -1,0 +1,38 @@
+#!/bin/bash
+
+echo "[+] Configurando rutas persistentes para Guemes..."
+
+# Elimino ruta previa si existiera
+ip route del 10.10.100.0/25 2>/dev/null
+
+# Agrego la ruta nueva
+ip route add 10.10.100.0/25 via 10.10.10.1 dev lan && \
+echo "[✓] Ruta a 10.10.100.0/25 via 10.10.10.1 agregada correctamente."
+
+# Verifico el ruteo actual
+echo
+echo "[INFO] Rutas actuales:"
+ip route show
+
+# (Opcional) Refuerzo iptables si querés
+echo
+echo "[INFO] Verificando iptables NAT y FORWARD..."
+
+# Aseguro NAT WAN
+iptables -t nat -C POSTROUTING -o wan -j MASQUERADE 2>/dev/null || {
+    iptables -t nat -A POSTROUTING -o wan -j MASQUERADE
+    echo "[✓] NAT habilitado en WAN."
+}
+
+# Aseguro que FORWARD esté permitido (si querés también protegerlo más)
+iptables -C FORWARD -s 10.10.10.0/24 -d 10.10.100.0/25 -j ACCEPT 2>/dev/null || {
+    iptables -A FORWARD -s 10.10.10.0/24 -d 10.10.100.0/25 -j ACCEPT
+    echo "[✓] Trafico FORWARD de 10.10.10.0/24 a 10.10.100.0/25 permitido."
+}
+
+# Guardamos iptables persistente
+iptables-save > /etc/iptables/rules.v4
+echo "[✓] Reglas iptables guardadas."
+
+echo
+echo "[🎉] Configuración completada."
