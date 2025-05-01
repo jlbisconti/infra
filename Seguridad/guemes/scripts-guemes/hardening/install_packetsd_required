@@ -9,7 +9,6 @@ PAQUETES=(
   apt-show-versions
   auditd
   apparmor
-  ufw
   debsums
   chkrootkit
   lynis
