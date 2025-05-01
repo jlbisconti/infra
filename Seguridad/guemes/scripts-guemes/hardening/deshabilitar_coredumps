@@ -1,0 +1,17 @@
+#!/bin/bash
+
+echo "🔒 Deshabilitando core dumps de forma permanente..."
+
+# Deshabilitar por limits.conf
+echo '* hard core 0' >> /etc/security/limits.conf
+
+# Deshabilitar por sysctl
+echo 'fs.suid_dumpable = 0' >> /etc/sysctl.conf
+sysctl -w fs.suid_dumpable=0
+
+# Desactivar systemd-coredump (si está presente)
+if systemctl list-units --type=socket | grep -q systemd-coredump.socket; then
+    systemctl disable systemd-coredump.socket --now
+fi
+
+echo "✅ Core dumps deshabilitados."

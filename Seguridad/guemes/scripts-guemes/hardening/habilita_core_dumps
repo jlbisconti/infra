@@ -1,0 +1,5 @@
+nano /usr/local/bin/deshabilitar-coredumps.sh
+# Pegás el script 1 y guardás
+
+nano /usr/local/bin/habilitar-core-temporal.sh
+# Pegás el script 2 y guardás
