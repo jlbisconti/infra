@@ -1,0 +1,67 @@
+#!/bin/bash
+
+# 🛡️ Script para endurecer servicios systemd inseguros
+# Por Guemes Ninja Security Force 🔥
+
+# Lista de servicios inseguros
+SERVICIOS=(
+  anacron.service
+  auditd.service
+  block-honeypot.service
+  cron.service
+  dbus.service
+  dm-event.service
+  emergency.service
+  exim4.service
+  fail2ban.service
+  getty@tty1.service
+  ifup@lan.service
+  lvm2-lvmpolld.service
+  rc-local.service
+  rescue.service
+  squid.service
+  ssh.service
+  suricata-q0.service
+  systemd-ask-password-console.service
+  systemd-ask-password-wall.service
+  systemd-fsckd.service
+  systemd-initctl.service
+  systemd-rfkill.service
+  user@1000.service
+  wpa_supplicant.service
+)
+
+# Directorio para overrides
+mkdir -p /etc/systemd/system/
+
+for servicio in "${SERVICIOS[@]}"; do
+  echo "🔒 Endureciendo: $servicio"
+
+  # Crear override
+  mkdir -p /etc/systemd/system/$servicio.d
+
+  cat > /etc/systemd/system/$servicio.d/hardening.conf <<EOF
+[Service]
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+NoNewPrivileges=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+ProtectKernelTunables=true
+RestrictSUIDSGID=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+RestrictRealtime=true
+RestrictNamespaces=true
+SystemCallFilter=@system-service
+EOF
+
+done
+
+echo "✅ Overrides creados."
+echo "♻️ Recargando systemd..."
+systemctl daemon-reexec
+systemctl daemon-reload
+
+echo "💬 ¡Servicios inseguros endurecidos! No olvides testear que todo siga funcionando 🚀"

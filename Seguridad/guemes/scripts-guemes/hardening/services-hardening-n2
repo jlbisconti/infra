@@ -1,0 +1,57 @@
+#!/bin/bash
+
+# Lista de servicios que vamos a endurecer
+SERVICIOS=(
+  fail2ban.service
+  suricata-q0.service
+  ssh.service
+  squid.service
+  cron.service
+  anacron.service
+  auditd.service
+  dbus.service
+  getty@tty1.service
+  rc-local.service
+  block-honeypot.service
+  wpa_supplicant.service
+)
+
+# Configuracion segura para cada servicio
+CONFIGURACION="""[Service]
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+ProtectHostname=yes
+ProtectClock=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+RestrictAddressFamilies=AF_INET AF_INET6
+"""
+
+# Función para aplicar hardening
+aplicar_hardening() {
+  for servicio in "${SERVICIOS[@]}"; do
+    echo "Endureciendo $servicio..."
+    mkdir -p "/etc/systemd/system/$servicio.d"
+    echo "$CONFIGURACION" > "/etc/systemd/system/$servicio.d/override.conf"
+  done
+}
+
+# Aplicar cambios
+echo "Aplicando hardening a los servicios..."
+aplicar_hardening
+
+# Recargar systemd
+echo "Recargando systemd y reiniciando servicios..."
+systemctl daemon-reload
+
+# Reiniciar servicios endurecidos
+for servicio in "${SERVICIOS[@]}"; do
+  systemctl restart "$servicio"
+  systemctl status "$servicio" --no-pager --lines=5
+  echo "----------------------------------------"
+done
+
+# Final
+echo "✅ Hardening de systemd completado con exito!"
