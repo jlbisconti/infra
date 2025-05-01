@@ -1,0 +1,28 @@
+#!/bin/bash
+
+PCAP="$1"
+OUTPUT="reglas-drop.rules"
+
+if ! command -v tshark &> /dev/null; then
+    echo "Necesitás instalar tshark: sudo apt install tshark"
+    exit 1
+fi
+
+if [ ! -f "$PCAP" ]; then
+    echo "Archivo $PCAP no encontrado"
+    exit 1
+fi
+
+echo "# Reglas DROP generadas desde $PCAP" > "$OUTPUT"
+
+tshark -r "$PCAP" -T fields -e ip.src -e ip.dst -e _ws.col.Protocol -e tcp.srcport -e tcp.dstport -e udp.srcport -e udp.dstport -Y "ip" | sort | uniq | while IFS=$'\t' read -r src dst proto tsp dsp usp udp; do
+    sport="${tsp:-$usp}"
+    dport="${dsp:-$udp}"
+    if [[ "$proto" == "TCP" ]]; then
+        echo "drop tcp $src any -> $dst $dport (msg:\"DROP TCP $src -> $dst:$dport\"; sid:$RANDOM; rev:1;)" >> "$OUTPUT"
+    elif [[ "$proto" == "UDP" ]]; then
+        echo "drop udp $src any -> $dst $dport (msg:\"DROP UDP $src -> $dst:$dport\"; sid:$RANDOM; rev:1;)" >> "$OUTPUT"
+    fi
+done
+
+echo "Reglas guardadas en $OUTPUT"
