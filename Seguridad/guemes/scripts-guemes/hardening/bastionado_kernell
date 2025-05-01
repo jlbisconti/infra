@@ -1,0 +1,34 @@
+#!/bin/bash
+
+BACKUP="/etc/sysctl.d/99-hardening-backup-$(date +%F-%H%M).conf"
+HARDEN_FILE="/etc/sysctl.d/99-lynis-hardening.conf"
+
+echo "🛡️ Aplicando bastionado básico del kernel con sysctl..."
+echo "💾 Guardando backup en: $BACKUP"
+
+cp /etc/sysctl.conf "$BACKUP" 2>/dev/null || true
+
+cat > "$HARDEN_FILE" <<EOF
+# Recomendaciones de bastionado según Lynis - Jose Luis
+dev.tty.ldisc_autoload = 0
+fs.protected_fifos = 2
+kernel.core_uses_pid = 1
+kernel.kptr_restrict = 2
+kernel.sysrq = 0
+kernel.unprivileged_bpf_disabled = 1
+kernel.yama.ptrace_scope = 1
+net.core.bpf_jit_harden = 2
+net.ipv4.conf.all.log_martians = 1
+net.ipv4.conf.all.rp_filter = 1
+net.ipv4.conf.all.send_redirects = 0
+net.ipv4.conf.default.accept_redirects = 0
+net.ipv4.conf.default.accept_source_route = 0
+net.ipv4.conf.default.log_martians = 1
+net.ipv6.conf.all.accept_redirects = 0
+net.ipv6.conf.default.accept_redirects = 0
+EOF
+
+# Aplicar en tiempo real
+sysctl --system
+
+echo "✅ Bastionado aplicado. Revisión guardada en: $HARDEN_FILE"
