@@ -1,0 +1,37 @@
+#!/bin/bash
+
+echo "🛡 Instalador de paquetes recomendados por Lynis"
+echo "🔍 Verificando e instalando solo los que faltan..."
+echo
+
+# Lista de paquetes sugeridos por Lynis (podés ampliarla)
+PAQUETES=(
+  apt-show-versions
+  auditd
+  apparmor
+  ufw
+  debsums
+  chkrootkit
+  lynis
+  acct
+  aide
+)
+
+INSTALADOS=()
+FALTANTES=()
+
+for paquete in "${PAQUETES[@]}"; do
+    if dpkg -l | grep -qw "$paquete"; then
+        echo "✅ $paquete ya está instalado"
+        INSTALADOS+=("$paquete")
+    else
+        echo "📦 Instalando $paquete..."
+        apt-get install -y "$paquete"
+        FALTANTES+=("$paquete")
+    fi
+done
+
+echo
+echo "📋 Resumen:"
+echo "✔️ Ya estaban: ${#INSTALADOS[@]} → ${INSTALADOS[*]}"
+echo "🆕 Instalados ahora: ${#FALTANTES[@]} → ${FALTANTES[*]}"
