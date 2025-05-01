@@ -1,0 +1,57 @@
+#!/bin/bash
+
+echo "🔒 Aplicando endurecimiento según recomendaciones de Lynis..."
+
+### 1. DEBSUMS
+if ! dpkg -l | grep -qw debsums; then
+    echo "📦 Instalando debsums..."
+    apt-get install -y debsums
+else
+    echo "✅ debsums ya instalado"
+fi
+
+# Agregar cron semanal si no existe
+CRON_FILE="/etc/cron.weekly/debsums-check"
+if [ ! -f "$CRON_FILE" ]; then
+    echo "🕒 Agregando chequeo semanal de integridad con debsums..."
+    cat > "$CRON_FILE" <<EOF
+#!/bin/bash
+debsums -s > /var/log/debsums-check.log
+EOF
+    chmod +x "$CRON_FILE"
+else
+    echo "✅ Cron de debsums ya existe: $CRON_FILE"
+fi
+
+### 2. UNATTENDED-UPGRADES
+if ! dpkg -l | grep -qw unattended-upgrades; then
+    echo "📦 Instalando actualizaciones automáticas (unattended-upgrades)..."
+    apt-get install -y unattended-upgrades
+    dpkg-reconfigure --priority=low unattended-upgrades
+else
+    echo "✅ unattended-upgrades ya instalado"
+fi
+
+### 3. BACKUP NAMESERVER
+RESOLV="/etc/resolv.conf"
+if ! grep -q 'nameserver 1.1.1.1' "$RESOLV"; then
+    echo "🌐 Agregando nameserver de backup (1.1.1.1)..."
+    echo "nameserver 1.1.1.1" >> "$RESOLV"
+else
+    echo "✅ Nameserver de backup ya presente"
+fi
+
+### 4. DESHABILITAR PROTOCOLOS (dccp, sctp, rds)
+PROTO_ARCHIVO="/etc/modprobe.d/disable-protocols.conf"
+echo "📛 Desactivando protocolos dccp, sctp y rds si no se usan..."
+cat > "$PROTO_ARCHIVO" <<EOF
+install dccp /bin/true
+install sctp /bin/true
+install rds /bin/true
+EOF
+
+echo "✅ Archivo creado: $PROTO_ARCHIVO"
+echo "💡 Reiniciá o corré 'update-initramfs -u && reboot' para aplicar completamente."
+
+echo
+echo "✔️ Endurecimiento completado según las recomendaciones de Lynis."
