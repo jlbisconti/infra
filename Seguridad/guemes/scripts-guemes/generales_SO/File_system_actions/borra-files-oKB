@@ -1,0 +1,50 @@
+#!/bin/bash
+
+echo "🗂️ Ingrese la ruta del directorio a revisar:"
+read -r DIR
+
+# Validación de ruta
+if [ ! -d "$DIR" ]; then
+  echo "❌ La ruta '$DIR' no es un directorio válido."
+  exit 1
+fi
+
+echo "🔍 Buscando archivos de 0 KB en $DIR..."
+ARCHIVOS=$(find "$DIR" -type f -size 0)
+
+if [ -z "$ARCHIVOS" ]; then
+  echo "✅ No se encontraron archivos de 0 KB."
+  exit 0
+fi
+
+echo "⚠️ Se encontraron los siguientes archivos vacíos:"
+echo "$ARCHIVOS"
+echo
+echo "¿Qué desea hacer?"
+echo "1) Eliminar todos automáticamente"
+echo "2) Eliminar uno por uno (modo interactivo)"
+echo "3) Cancelar"
+read -rp "Opción: " OP
+
+case "$OP" in
+  1)
+    echo "🧹 Eliminando todos..."
+    find "$DIR" -type f -size 0 -delete
+    echo "✅ Archivos eliminados."
+    ;;
+  2)
+    echo "🧼 Eliminación interactiva:"
+    while IFS= read -r archivo; do
+      echo "¿Eliminar '$archivo'? (s/N)"
+      read -r RES
+      if [[ "$RES" =~ ^[sS]$ ]]; then
+        rm -f "$archivo" && echo "🗑️ Eliminado."
+      else
+        echo "⏭️ Saltado."
+      fi
+    done <<< "$ARCHIVOS"
+    ;;
+  *)
+    echo "🚫 Cancelado."
+    ;;
+esac
