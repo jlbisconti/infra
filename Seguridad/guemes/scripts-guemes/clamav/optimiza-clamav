@@ -1,0 +1,35 @@
+#!/bin/bash
+
+CONF_FILE="/etc/clamav/clamd.conf"
+
+if [ ! -f "$CONF_FILE" ]; then
+  echo "❌ Archivo $CONF_FILE no encontrado. Abortando."
+  exit 1
+fi
+
+echo "🔧 Optimización de configuración en: $CONF_FILE"
+
+# Crear backup
+cp "$CONF_FILE" "$CONF_FILE.bak"
+echo "🗄️  Backup creado en: $CONF_FILE.bak"
+
+# Aplicar parámetros de optimización
+declare -A SETTINGS=(
+  ["MaxFileSize"]="50M"
+  ["MaxScanSize"]="100M"
+  ["MaxRecursion"]="16"
+  ["MaxThreads"]="2"
+  ["FollowDirectorySymlinks"]="no"
+  ["FollowFileSymlinks"]="no"
+  ["ScanOnAccess"]="no"
+  ["ExcludePath"]="^/var/log/\nExcludePath ^/proc/\nExcludePath ^/sys/\nExcludePath ^/mnt/"
+)
+
+for KEY in "${!SETTINGS[@]}"; do
+  VALUE="${SETTINGS[$KEY]}"
+  if grep -q "^$KEY" "$CONF_FILE"; then
+    sed -i "s|^$KEY .*|$KEY $VALUE|" "$CONF_FILE"
+  else
+    echo -e "$KEY $VALUE" >> "$CONF_FILE"
+  fi
+done
