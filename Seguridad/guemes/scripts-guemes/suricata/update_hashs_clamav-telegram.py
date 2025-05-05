@@ -1,89 +1,68 @@
 #!/usr/bin/env python3
 import requests
-import yaml
-import os
 import datetime
 import subprocess
-from pathlib import Path
+import logging
+import os
 
-# Configuraciones
-URL = "https://bazaar.abuse.ch/export/txt/sha256/recent/"
-HASHLIST_PATH = "/opt/suricata/etc/suricata/hashlist/hashes.yaml"
-LOG_PATH = "/var/log/update_hashs_clamav.log"
+# Config
+TOR_EXIT_URL = "https://check.torproject.org/torbulkexitlist"
+RULES_DIR = "/opt/suricata/var/lib/suricata/rules"
+RULE_FILE = f"{RULES_DIR}/tor-exit-block.rules"
+LOG_FILE = "/var/log/update_tor_rules.log"
 TELEGRAM_TOKEN = "7893384536:AAHa-LQpW73QVyXM9UVk_mee-r9RBaZgvEY"
 TELEGRAM_CHAT_ID = "2135636660"
+SURICATA_RESTART_CMD = ["/bin/systemctl", "restart", "suricata-q0"]
+SID_BASE = 10000000
 
-def log(msg):
-    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    with open(LOG_PATH, "a") as log_file:
-        log_file.write(f"[{timestamp}] {msg}\n")
+# Logging setup
+logging.basicConfig(filename=LOG_FILE, level=logging.INFO, format='[%(asctime)s] %(message)s')
+
+def log_and_print(msg):
+    print(msg)
+    logging.info(msg)
 
 def enviar_telegram(msg):
-    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
-    data = {"chat_id": TELEGRAM_CHAT_ID, "text": msg, "parse_mode": "Markdown"}
     try:
-        requests.post(url, data=data)
-    except Exception as e:
-        log(f"❌ Error enviando mensaje a Telegram: {e}")
-
-# Crear archivo si no existe
-if not os.path.exists(HASHLIST_PATH):
-    with open(HASHLIST_PATH, "w") as f:
-        f.write("file_hashes:\n")
-
-with open(HASHLIST_PATH, "r") as f:
-    data = yaml.safe_load(f) or {}
-
-if "file_hashes" not in data:
-    data["file_hashes"] = []
-
-hashlist = data["file_hashes"]
-hashes_existentes = {entry["sha256"] for entry in hashlist}
-
-# Descargar hashes
-print("📥 Descargando nuevos hashes...")
-response = requests.get(URL)
-nuevos_hashes = [line.strip() for line in response.text.splitlines() if line and not line.startswith("#")]
-
-agregados = 0
-for sha256 in nuevos_hashes:
-    if sha256 not in hashes_existentes:
-        hashlist.append({
-            "sha256": sha256,
-            "action": "drop",
-            "msg": f"MalwareBazaar SHA256 Match {sha256[:8]}...",
-            "sid": 9000000 + len(hashlist) + 1,
-            "rev": 1,
-            "date_added": datetime.datetime.now().strftime("%Y-%m-%d")
+        requests.post(f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage", data={
+            "chat_id": TELEGRAM_CHAT_ID,
+            "text": msg
         })
-        agregados += 1
+    except Exception as e:
+        logging.error(f"❌ Error enviando a Telegram: {e}")
 
-# Eliminar hashes con más de 12 meses
-ahora = datetime.datetime.now()
-original_len = len(hashlist)
-hashlist = [
-    h for h in hashlist
-    if "date_added" in h and (ahora - datetime.datetime.strptime(h["date_added"], "%Y-%m-%d")).days <= 365
-]
-eliminados = original_len - len(hashlist)
-data["file_hashes"] = hashlist
+def descargar_ips_tor():
+    response = requests.get(TOR_EXIT_URL)
+    return [line.strip() for line in response.text.splitlines() if line and not line.startswith("#")]
 
-# Guardar YAML
-with open(HASHLIST_PATH, "w") as f:
-    yaml.dump(data, f, default_flow_style=False)
+def generar_reglas_tor(ips):
+    reglas = []
+    for i, ip in enumerate(ips):
+        sid = SID_BASE + i
+        regla = f'drop ip {ip} any -> $HOME_NET any (msg:"TOR Exit Node - {ip}"; sid:{sid}; rev:1;)'
+        reglas.append(regla)
+    return reglas
 
-# Reiniciar Suricata
-subprocess.run(["systemctl", "restart", "suricata-q0"])
+def guardar_reglas(rules):
+    with open(RULE_FILE, "w") as f:
+        f.write("\n".join(rules) + "\n")
 
-# Log y Telegram
-mensaje = (
-    "📡 *Actualización de hashes para Suricata*\n"
-    f"🟢 Nuevos agregados: `{agregados}`\n"
-    f"🗑️ Hashes eliminados (más de 12 meses): `{eliminados}`\n"
-    f"📊 Total actual: `{len(hashlist)}`\n"
-    f"🕒 Fecha: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
-)
+def reiniciar_suricata():
+    subprocess.run(SURICATA_RESTART_CMD)
 
-print(mensaje)
-log(mensaje)
-enviar_telegram(mensaje)
+def main():
+    log_and_print("📥 Descargando lista de IPs Tor...")
+    ips = descargar_ips_tor()
+    log_and_print(f"📦 {len(ips)} IPs descargadas.")
+
+    reglas = generar_reglas_tor(ips)
+    guardar_reglas(reglas)
+    log_and_print(f"🛡️ {len(reglas)} reglas generadas y guardadas en {RULE_FILE}")
+
+    reiniciar_suricata()
+    log_and_print("✅ Suricata reiniciado con nuevas reglas.")
+
+    enviar_telegram(f"🛡️ Reglas Tor actualizadas: {len(reglas)} IPs bloqueadas. Suricata reiniciado.")
+
+if __name__ == "__main__":
+    main()
