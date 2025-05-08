@@ -1,0 +1,28 @@
+# 🛑 Minero de criptomonedas conocido
+drop http any any -> $HOME_NET any (msg:"[DROP] CoinMiner detectado - minexmr.com"; flow:to_server,established; http.host; content:"minexmr.com"; sid:9100010; rev:1;)
+
+# 🕵️‍♂️ Posible panel de administración externo
+drop http any any -> $HOME_NET any (msg:"[DROP] Intento de acceso sospechoso - /admin"; flow:to_server,established; http.uri; content:"/admin"; nocase; sid:9100011; rev:1;)
+
+# 🦠 Intento de ejecución de comandos
+drop http any any -> $HOME_NET any (msg:"[DROP] Intento de ejecución remota - cmd="; flow:to_server,established; http.uri; content:"cmd="; nocase; sid:9100012; rev:1;)
+
+# 🧠 User-Agent sospechoso - masscan
+drop http any any -> $HOME_NET any (msg:"[DROP] Scanner automatizado detectado - User-Agent masscan"; flow:to_server,established; http.user_agent; content:"masscan"; nocase; sid:9100013; rev:1;)
+
+# 🐍 Script malicioso Python (User-Agent)
+drop http any any -> $HOME_NET any (msg:"[DROP] Bot o script Python detectado"; flow:to_server,established; http.user_agent; content:"python"; nocase; sid:9100014; rev:1;)
+
+# 👻 URI sospechosa de shell
+drop http any any -> $HOME_NET any (msg:"[DROP] Webshell detectado - shell.php"; flow:to_server,established; http.uri; content:"shell.php"; nocase; sid:9100015; rev:1;)
+
+# 🔐 Phishing: uso de "secure-login"
+drop http any any -> $HOME_NET any (msg:"[DROP] Posible Phishing - secure-login"; flow:to_server,established; http.uri; content:"secure-login"; nocase; sid:9100016; rev:1;)
+
+# 🔁 Dominios dinámicos de malware
+drop dns any any -> any any (msg:"[DROP] DNS sospechoso - duckdns.org"; dns.query; content:"duckdns.org"; endswith; nocase; sid:9100017; rev:1;)
+drop dns any any -> any any (msg:"[DROP] DNS sospechoso - no-ip.com"; dns.query; content:"no-ip.com"; endswith; nocase; sid:9100018; rev:1;)
+drop dns any any -> any any (msg:"[DROP] DNS sospechoso - dyndns.org"; dns.query; content:"dyndns.org"; endswith; nocase; sid:9100019; rev:1;)
+
+# 🕸️ Intento de C2 via Telegram (HTTP Host)
+drop http any any -> $HOME_NET any (msg:"[DROP] Posible C2 por Telegram detectado"; flow:to_server,established; http.host; content:"api.telegram.org"; sid:9100020; rev:1;)
